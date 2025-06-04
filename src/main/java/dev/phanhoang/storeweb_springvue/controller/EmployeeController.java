@@ -11,12 +11,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/employees")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173/")
 public class EmployeeController {
     private final EmployeeService employeeService;
-
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
 
     @GetMapping
     public ResponseEntity<List<Employee>> getEmployee() {
