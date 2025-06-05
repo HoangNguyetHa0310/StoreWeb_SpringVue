@@ -1,4 +1,5 @@
 <script>
+import { Modal } from 'bootstrap';
 import EmployeeService from "@/services/EmployeeService";
 
 export default {
@@ -16,14 +17,64 @@ export default {
     };
   },
   computed: {
-    
+    modalTitle(){
+      return this.editing ? 'Edit Employee' : 'Add Employee';
+    },
+    buttonLabel() {
+      return this.editing ? 'Update' : 'Save';
+    }
   },
   methods: {
+    showModal (employee ) {
+      if (employee) {
+        this.employeeFrom = {...employee};
+        this.editing = true;
+      } else {
+        this.resetFrom();
+      }
+
+      console.log('1111', this.modalinstance)
+
+      if (!this.modalinstance) {
+        this.modalinstance = new Modal(document.getElementById('employeeModal'));
+        console.log('222222222', this.modalinstance)
+
+      }
+
+      this.modalinstance.show();
+    },
+    saveEmployee() {
+      const action = this.editing ? 'updateEmployee' : 'addEmployee';
+      EmployeeService[action](this.employeeFrom).then(() => {
+        this.loadEmployees();
+        this.modalinstance.hide();
+        this.resetFrom();
+      })
+    },
     loadEmployees() {
       EmployeeService.getEmployees().then((response) => {
         this.employees = response.data;
       });
     },
+
+    deleteEmployee(id) {
+      if (confirm('Bạn có chắc bạn muốn xóa nhân viên này không?')) {
+        EmployeeService.deleteEmployee(id).then(this.loadEmployees);
+      }
+    },
+
+
+    resetFrom() {
+      this.employeeFrom = {
+        id: null,
+        firstName: "",
+        lastName: "",
+        email: "",
+      };
+      this.editing = false;
+    },
+
+
   },
   mounted() {
     this.loadEmployees();
@@ -33,9 +84,9 @@ export default {
 
 <template>
   <div class="container mt-3">
-    <button class="btn btn-primary">Add Employees</button>
+    <button @click="showModal(null)" class="btn btn-primary">Add Employees</button>
 
-    <table class="table table-stripped mt-3">
+    <table class="table table-striped mt-3">
       <thead>
         <tr>
           <td>ID</td>
@@ -53,8 +104,8 @@ export default {
           <td>{{ employee.lastName }}</td>
           <td>{{ employee.email }}</td>
           <td>
-            <button class="btn btn-warning">Edit</button>
-            <button class="btn btn-danger">Delete</button>
+            <button @click="showModal(employee)" class="btn btn-warning">Edit</button>
+            <button @click="deleteEmployee(employee.id)" class="btn btn-danger">Delete</button>
           </td>
         </tr>
       </tbody>
@@ -64,7 +115,7 @@ export default {
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <div class="modal-title">Employee List</div>
+            <div class="modal-title"> {{ modalTitle }} </div>
             <button
               class="btn-close"
               type="button"
@@ -73,23 +124,23 @@ export default {
           </div>
 
           <div class="modal-body">
-            <form action="">
+            <form @submit.prevent="saveEmployee" >
               <div class="mb-3">
                 <label class="form-label"> First name </label>
-                <input type="text" class="form-control" required />
+                <input type="text" class="form-control" v-model="employeeFrom.firstName" required />
               </div>
 
               <div class="mb-3">
                 <label class="form-label"> Last name </label>
-                <input type="text" class="form-control" required />
+                <input type="text" class="form-control" v-model="employeeFrom.lastName" required />
               </div>
 
               <div class="mb-3">
                 <label class="form-label"> Email </label>
-                <input type="text" class="form-control" required />
+                <input type="text" class="form-control" v-model="employeeFrom.email" required />
               </div>
 
-              <button type="submit" class="btn btn-primary">Comfirm</button>
+              <button type="submit" class="btn btn-primary">{{ buttonLabel }}</button>
 
             </form>
           </div>
