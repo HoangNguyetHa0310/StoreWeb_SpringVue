@@ -1,16 +1,14 @@
 package dev.phanhoang.storeweb_springvue.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductDTO {
     private Long id;
     private String name;
@@ -18,20 +16,16 @@ public class ProductDTO {
     private String description;
     private String shortDescription;
     private String sku;
+    private Long brandId;
+    private Long categoryId;
     private BigDecimal price;
     private BigDecimal salePrice;
+    private BigDecimal costPrice;
+    private BigDecimal weight;
+    private String dimensions;
     private String status;
     private Boolean isFeatured;
     private Boolean isDigital;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    // Nested objects
-    private CategoryDTO category;
-    private BrandDTO brand;
-    private List<ProductImageDTO> images;
-
-    // For display
-    private String primaryImageUrl;
-    private BigDecimal displayPrice; // sale_price if available, else price
+    private String metaTitle;
+    private String metaDescription;
 }

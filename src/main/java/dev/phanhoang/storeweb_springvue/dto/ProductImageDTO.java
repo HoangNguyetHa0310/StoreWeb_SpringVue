@@ -1,14 +1,15 @@
 package dev.phanhoang.storeweb_springvue.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductImageDTO {
     private Long id;
+    private Long productId;
     private String imageUrl;
     private String altText;
     private Boolean isPrimary;
