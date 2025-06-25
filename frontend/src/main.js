@@ -10,11 +10,18 @@ import { createPinia } from 'pinia'
 // Component gốc
 import App from './App.vue'
 
+// ✅ Thêm dòng này để import router
+import router from './router';
+
 // Tạo ứng dụng Vue
 const app = createApp(App)
 
-// Dùng plugin
-app.use(createPinia())
+// ✅ Khởi tạo Pinia và dùng nó
+const pinia = createPinia();
+app.use(pinia);
+
+// ✅ Dùng router nếu chưa có
+app.use(router);
 
 // Mount vào DOM
 app.mount('#app')

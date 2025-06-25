@@ -1,69 +1,68 @@
 package dev.phanhoang.storeweb_springvue.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Product {
+
+    public enum ProductStatus {
+        ACTIVE, INACTIVE
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(unique = true, nullable = false)
     private String slug;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "short_description")
-    private String shortDescription;
-
+    @Column(unique = true, nullable = false)
     private String sku;
-
-    @Column(name = "brand_id")
-    private Long brandId;
 
     @Column(name = "category_id")
     private Long categoryId;
 
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "sale_price")
+    @Column(name = "sale_price", precision = 10, scale = 2)
     private BigDecimal salePrice;
 
-    @Column(name = "cost_price")
-    private BigDecimal costPrice;
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity = 0;
 
-    private BigDecimal weight;
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 
-    private String dimensions;
-
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status = ProductStatus.ACTIVE;
 
     @Column(name = "is_featured")
-    private Boolean isFeatured;
+    private Boolean isFeatured = false;
 
-    @Column(name = "is_digital")
-    private Boolean isDigital;
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "meta_title")
-    private String metaTitle;
-
-    @Column(name = "meta_description")
-    private String metaDescription;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
-
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 }

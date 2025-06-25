@@ -13,11 +13,11 @@
             <input v-model="form.name" class="form-control" required />
           </div>
           <div class="col-md-6">
-            <label class="form-label">Slug</label>
+            <label class="form-label">Slug (Tạo đường dẫn cho sản phẩm)</label>
             <input v-model="form.slug" class="form-control" required />
           </div>
           <div class="col-md-6">
-            <label class="form-label">SKU</label>
+            <label class="form-label">SKU (Mã hàng hóa để quản lý kho)</label>
             <input v-model="form.sku" class="form-control" required />
           </div>
           <div class="col-md-6">
@@ -40,8 +40,12 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label">Trạng thái</label>
-            <input v-model="form.status" class="form-control" />
+            <label class="form-label">Trạng thái sản phẩm</label>
+            <select v-model="form.status" class="form-select">
+              <option value="active">Hoạt động</option>
+              <option value="inactive">Tạm ẩn</option>
+              <option value="discontinued">Ngừng kinh doanh</option>
+            </select>
           </div>
 
           <div class="col-md-12">
@@ -58,8 +62,6 @@
         </div>
       </form>
     </div>
-
-    <ProductImageManager v-if="form.id" :productId="form.id" />
 
     <!-- Danh sách sản phẩm -->
     <div class="mt-4">
