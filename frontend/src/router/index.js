@@ -1,23 +1,42 @@
-
-
-
-
 import { createRouter, createWebHistory } from 'vue-router';
-import ProductManager from "@/components/ProductManager.vue";
-import ProductImageManager from "@/components/ProductImageManager.vue";
-import ProductList from "@/components/ProductList.vue";
-import ProductModal from "@/components/ProductModal.vue";
+import HomeView from '@/views/HomeView.vue';
+import ProductsView from '@/views/ProductsView.vue';
+import ProductDetailView from '@/views/ProductDetailView.vue';
+import LoginView from '@/views/LoginView.vue';
+import CartView from '@/views/CartView.vue';
 
 const routes = [
-    { path: '/', redirect: '/products' },
-    { path: '/products', name: 'Products', component: ProductList },
-    { path: '/products/productModal', name: 'ProductModal', component: ProductModal },
-    // bạn có thể thêm các trang khác ở đây
+  {
+    path: '/',
+    name: 'Home',
+    component: HomeView
+  },
+  {
+    path: '/products',
+    name: 'Products',
+    component: ProductsView
+  },
+  {
+    path: '/product/:id',
+    name: 'ProductDetail',
+    component: ProductDetailView,
+    props: true
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: CartView
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: LoginView
+  }
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes,
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes
 });
 
 export default router;

@@ -1,10 +1,12 @@
 package dev.phanhoang.storeweb_springvue.service;
 
-
-
-import dev.phanhoang.storeweb_springvue.dto.ProductDTO;
-import dev.phanhoang.storeweb_springvue.dto.ProductRequestDTO;
+import dev.phanhoang.storeweb_springvue.dto.CategoryResponseDto;
+import dev.phanhoang.storeweb_springvue.dto.ProductRequestDto;
+import dev.phanhoang.storeweb_springvue.dto.ProductResponseDto;
+import dev.phanhoang.storeweb_springvue.entity.Category;
 import dev.phanhoang.storeweb_springvue.entity.Product;
+import dev.phanhoang.storeweb_springvue.exception.DuplicateResourceException;
+import dev.phanhoang.storeweb_springvue.exception.ResourceNotFoundException;
 import dev.phanhoang.storeweb_springvue.repository.CategoryRepository;
 import dev.phanhoang.storeweb_springvue.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,104 +26,146 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    public Page<ProductDTO> getAllProducts(String name, Long categoryId, String status, Pageable pageable) {
-        Product.ProductStatus productStatus = status != null ? Product.ProductStatus.valueOf(status) : null;
-        return productRepository.findByFilters(name, categoryId, productStatus, pageable)
-                .map(this::convertToDTO);
+    // Get all products with pagination and filters
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> getAllProducts(String name, Long categoryId,
+                                                   Product.ProductStatus status, Pageable pageable) {
+        Page<Product> products = productRepository.findProductsWithFilters(name, categoryId, status, pageable);
+        return products.map(this::convertToResponseDto);
     }
 
-    public ProductDTO getProductById(Long id) {
-        return convertToDTO(productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id)));
-    }
-
-    public ProductDTO getProductBySlug(String slug) {
-        return convertToDTO(productRepository.findBySlug(slug)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với slug: " + slug)));
-    }
-
-    public ProductDTO createProduct(ProductRequestDTO request) {
-        if (productRepository.findBySlug(request.getSlug()).isPresent())
-            throw new RuntimeException("Slug đã tồn tại: " + request.getSlug());
-
-        if (productRepository.findBySku(request.getSku()).isPresent())
-            throw new RuntimeException("SKU đã tồn tại: " + request.getSku());
-
-        return convertToDTO(productRepository.save(convertToEntity(request)));
-    }
-
-    public ProductDTO updateProduct(Long id, ProductRequestDTO request) {
+    // Get product by ID
+    @Transactional(readOnly = true)
+    public ProductResponseDto getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
-
-        productRepository.findBySlug(request.getSlug())
-                .filter(p -> !p.getId().equals(id))
-                .ifPresent(p -> { throw new RuntimeException("Slug đã tồn tại: " + request.getSlug()); });
-
-        productRepository.findBySku(request.getSku())
-                .filter(p -> !p.getId().equals(id))
-                .ifPresent(p -> { throw new RuntimeException("SKU đã tồn tại: " + request.getSku()); });
-
-        updateFromRequest(product, request);
-        return convertToDTO(productRepository.save(product));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        return convertToResponseDto(product);
     }
 
+    // Get product by slug
+    @Transactional(readOnly = true)
+    public ProductResponseDto getProductBySlug(String slug) {
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
+        return convertToResponseDto(product);
+    }
+
+    // Create new product
+    public ProductResponseDto createProduct(ProductRequestDto requestDto) {
+        // Validate unique constraints
+        if (productRepository.existsBySlug(requestDto.getSlug())) {
+            throw new DuplicateResourceException("Product with slug '" + requestDto.getSlug() + "' already exists");
+        }
+        if (productRepository.existsBySku(requestDto.getSku())) {
+            throw new DuplicateResourceException("Product with SKU '" + requestDto.getSku() + "' already exists");
+        }
+
+        Product product = convertToEntity(requestDto);
+        Product savedProduct = productRepository.save(product);
+        return convertToResponseDto(savedProduct);
+    }
+
+    // Update product
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto requestDto) {
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        // Validate unique constraints (excluding current product)
+        if (productRepository.existsBySlugAndIdNot(requestDto.getSlug(), id)) {
+            throw new DuplicateResourceException("Product with slug '" + requestDto.getSlug() + "' already exists");
+        }
+        if (productRepository.existsBySkuAndIdNot(requestDto.getSku(), id)) {
+            throw new DuplicateResourceException("Product with SKU '" + requestDto.getSku() + "' already exists");
+        }
+
+        updateProductFields(existingProduct, requestDto);
+        Product updatedProduct = productRepository.save(existingProduct);
+        return convertToResponseDto(updatedProduct);
+    }
+
+    // Delete product
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id))
-            throw new RuntimeException("Không tìm thấy sản phẩm với ID: " + id);
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product not found with id: " + id);
+        }
         productRepository.deleteById(id);
     }
 
-    public List<ProductDTO> getFeaturedProducts() {
-        return productRepository.findByIsFeaturedTrue().stream()
-                .map(this::convertToDTO).collect(Collectors.toList());
+    // Get featured products
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getFeaturedProducts() {
+        List<Product> products = productRepository.findByIsFeaturedTrue();
+        return products.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
-    public Long getLowStockCount(Integer threshold) {
-        return productRepository.countLowStockProducts(threshold);
+    // Get products by category
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductsByCategory(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        return products.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
-    private ProductDTO convertToDTO(Product product) {
-        ProductDTO dto = new ProductDTO();
+    // Helper method to convert Entity to Response DTO
+    private ProductResponseDto convertToResponseDto(Product product) {
+        ProductResponseDto dto = new ProductResponseDto();
         dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setSlug(product.getSlug());
         dto.setDescription(product.getDescription());
         dto.setSku(product.getSku());
-        dto.setCategoryId(product.getCategoryId());
         dto.setPrice(product.getPrice());
         dto.setSalePrice(product.getSalePrice());
         dto.setStockQuantity(product.getStockQuantity());
         dto.setImageUrl(product.getImageUrl());
-        dto.setStatus(product.getStatus().name());
+        dto.setStatus(product.getStatus());
         dto.setIsFeatured(product.getIsFeatured());
         dto.setCreatedAt(product.getCreatedAt());
         dto.setUpdatedAt(product.getUpdatedAt());
 
-        if (product.getCategoryId() != null) {
-            categoryRepository.findById(product.getCategoryId())
-                    .ifPresent(c -> dto.setCategoryName(c.getName()));
+        if (product.getCategory() != null) {
+            CategoryResponseDto categoryDto = new CategoryResponseDto();
+            categoryDto.setId(product.getCategory().getId());
+            categoryDto.setName(product.getCategory().getName());
+            categoryDto.setSlug(product.getCategory().getSlug());
+            categoryDto.setDescription(product.getCategory().getDescription());
+            categoryDto.setIsActive(product.getCategory().getIsActive());
+            categoryDto.setCreatedAt(product.getCategory().getCreatedAt());
+            dto.setCategory(categoryDto);
         }
+
         return dto;
     }
 
-    private Product convertToEntity(ProductRequestDTO request) {
+    // Helper method to convert Request DTO to Entity
+    private Product convertToEntity(ProductRequestDto requestDto) {
         Product product = new Product();
-        updateFromRequest(product, request);
+        updateProductFields(product, requestDto);
         return product;
     }
 
-    private void updateFromRequest(Product product, ProductRequestDTO request) {
-        product.setName(request.getName());
-        product.setSlug(request.getSlug());
-        product.setDescription(request.getDescription());
-        product.setSku(request.getSku());
-        product.setCategoryId(request.getCategoryId());
-        product.setPrice(request.getPrice());
-        product.setSalePrice(request.getSalePrice());
-        product.setStockQuantity(request.getStockQuantity());
-        product.setImageUrl(request.getImageUrl());
-        product.setStatus(Product.ProductStatus.valueOf(request.getStatus()));
-        product.setIsFeatured(request.getIsFeatured());
+    // Helper method to update product fields
+    private void updateProductFields(Product product, ProductRequestDto requestDto) {
+        product.setName(requestDto.getName());
+        product.setSlug(requestDto.getSlug());
+        product.setDescription(requestDto.getDescription());
+        product.setSku(requestDto.getSku());
+        product.setPrice(requestDto.getPrice());
+        product.setSalePrice(requestDto.getSalePrice());
+        product.setStockQuantity(requestDto.getStockQuantity());
+        product.setImageUrl(requestDto.getImageUrl());
+        product.setStatus(requestDto.getStatus());
+        product.setIsFeatured(requestDto.getIsFeatured());
+
+        if (requestDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(requestDto.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + requestDto.getCategoryId()));
+            product.setCategory(category);
+        } else {
+            product.setCategory(null);
+        }
     }
 }

@@ -1,86 +1,97 @@
 package dev.phanhoang.storeweb_springvue.controller;
 
-
-
-import dev.phanhoang.storeweb_springvue.dto.ProductDTO;
-import dev.phanhoang.storeweb_springvue.dto.ProductRequestDTO;
+import dev.phanhoang.storeweb_springvue.dto.ProductRequestDto;
+import dev.phanhoang.storeweb_springvue.dto.ProductResponseDto;
+import dev.phanhoang.storeweb_springvue.entity.Product;
 import dev.phanhoang.storeweb_springvue.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
-import org.springframework.http.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
     private final ProductService productService;
 
+    // Get all products with pagination and filters
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllProducts(
+    public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue =     "id") String sortBy,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) Product.ProductStatus status) {
 
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<ProductDTO> products = productService.getAllProducts(name, categoryId, status, pageable);
+        Page<ProductResponseDto> products = productService.getAllProducts(name, categoryId, status, pageable);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("products", products.getContent());
-        response.put("currentPage", products.getNumber());
-        response.put("totalItems", products.getTotalElements());
-        response.put("totalPages", products.getTotalPages());
-        response.put("pageSize", products.getSize());
-        response.put("hasNext", products.hasNext());
-        response.put("hasPrevious", products.hasPrevious());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(products);
     }
 
+    // Get product by ID
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
+    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
+        ProductResponseDto product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
 
+    // Get product by slug
     @GetMapping("/slug/{slug}")
-    public ResponseEntity<ProductDTO> getProductBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(productService.getProductBySlug(slug));
+    public ResponseEntity<ProductResponseDto> getProductBySlug(@PathVariable String slug) {
+        ProductResponseDto product = productService.getProductBySlug(slug);
+        return ResponseEntity.ok(product);
     }
 
+    // Create new product
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
+    public ResponseEntity<ProductResponseDto> createProduct(@Valid @RequestBody ProductRequestDto requestDto) {
+        ProductResponseDto createdProduct = productService.createProduct(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
+    // Update product
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @ Valid @RequestBody ProductRequestDTO request) {
-        return ResponseEntity.ok(productService.updateProduct(id, request));
+    public ResponseEntity<ProductResponseDto> updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductRequestDto requestDto) {
+        ProductResponseDto updatedProduct = productService.updateProduct(id, requestDto);
+        return ResponseEntity.ok(updatedProduct);
     }
 
+    // Delete product
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.ok(Map.of("message", "Xóa sản phẩm thành công"));
+        return ResponseEntity.noContent().build();
     }
 
+    // Get featured products
     @GetMapping("/featured")
-    public ResponseEntity<List<ProductDTO>> getFeaturedProducts() {
-        return ResponseEntity.ok(productService.getFeaturedProducts());
+    public ResponseEntity<List<ProductResponseDto>> getFeaturedProducts() {
+        List<ProductResponseDto> products = productService.getFeaturedProducts();
+        return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/low-stock")
-    public ResponseEntity<Map<String, Long>> getLowStockCount(@RequestParam(defaultValue = "10") Integer threshold) {
-        return ResponseEntity.ok(Map.of("count", productService.getLowStockCount(threshold)));
+    // Get products by category
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductResponseDto>> getProductsByCategory(@PathVariable Long categoryId) {
+        List<ProductResponseDto> products = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(products);
     }
 }
-

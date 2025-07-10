@@ -1,27 +1,14 @@
-// Import CSS
-import './assets/main.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 
-// Import thư viện
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-
-// Component gốc
-import App from './App.vue'
-
-// ✅ Thêm dòng này để import router
+import App from './App.vue';
 import router from './router';
 
-// Tạo ứng dụng Vue
-const app = createApp(App)
+import './assets/main.css'; // Thêm dòng này
 
-// ✅ Khởi tạo Pinia và dùng nó
-const pinia = createPinia();
-app.use(pinia);
+const app = createApp(App);
 
-// ✅ Dùng router nếu chưa có
+app.use(createPinia());
 app.use(router);
 
-// Mount vào DOM
-app.mount('#app')
+app.mount('#app');
