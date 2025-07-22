@@ -109,6 +109,15 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    // Get all products (no pagination)
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getAllProductsNoPaging() {
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     // Helper method to convert Entity to Response DTO
     private ProductResponseDto convertToResponseDto(Product product) {
         ProductResponseDto dto = new ProductResponseDto();

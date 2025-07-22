@@ -3,41 +3,31 @@ package dev.phanhoang.storeweb_springvue.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Product name is required")
-    @Size(max = 255, message = "Product name must not exceed 255 characters")
+    @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String name;
 
-    @NotBlank(message = "Product slug is required")
-    @Size(max = 255, message = "Product slug must not exceed 255 characters")
+    @NotBlank
+    @Size(max = 255)
     @Column(unique = true, nullable = false)
     private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @NotBlank(message = "SKU is required")
-    @Size(max = 100, message = "SKU must not exceed 100 characters")
+    @NotBlank
+    @Size(max = 100)
     @Column(unique = true, nullable = false)
     private String sku;
 
@@ -45,39 +35,70 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    @NotNull
+    @DecimalMin(value = "0.0", inclusive = false)
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
-    @DecimalMin(value = "0.0", message = "Sale price must be greater than or equal to 0")
+    @DecimalMin(value = "0.0")
     @Column(name = "sale_price", precision = 10, scale = 2)
     private BigDecimal salePrice;
 
-    @Min(value = 0, message = "Stock quantity must be greater than or equal to 0")
+    @Min(value = 0)
     @Column(name = "stock_quantity")
     private Integer stockQuantity = 0;
 
-    @Size(max = 500, message = "Image URL must not exceed 500 characters")
-    @Column(name = "image_url")
+    @Size(max = 500)
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
     private ProductStatus status = ProductStatus.ACTIVE;
 
-    @Column(name = "is_featured")
     private Boolean isFeatured = false;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public enum ProductStatus {
-        ACTIVE, INACTIVE
+    @PrePersist
+    protected void onCreate() {
+        createdAt = updatedAt = LocalDateTime.now();
     }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public enum ProductStatus { ACTIVE, INACTIVE }
+
+    // Getter & Setter
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getSku() { return sku; }
+    public void setSku(String sku) { this.sku = sku; }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+    public BigDecimal getSalePrice() { return salePrice; }
+    public void setSalePrice(BigDecimal salePrice) { this.salePrice = salePrice; }
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public ProductStatus getStatus() { return status; }
+    public void setStatus(ProductStatus status) { this.status = status; }
+    public Boolean getIsFeatured() { return isFeatured; }
+    public void setIsFeatured(Boolean isFeatured) { this.isFeatured = isFeatured; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

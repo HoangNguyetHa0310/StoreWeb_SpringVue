@@ -1,47 +1,107 @@
 package dev.phanhoang.storeweb_springvue.dto;
 
 import dev.phanhoang.storeweb_springvue.entity.Product;
-import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProductRequestDto {
-    @NotBlank(message = "Product name is required")
-    @Size(max = 255, message = "Product name must not exceed 255 characters")
     private String name;
-
-    @NotBlank(message = "Product slug is required")
-    @Size(max = 255, message = "Product slug must not exceed 255 characters")
     private String slug;
-
     private String description;
-
-    @NotBlank(message = "SKU is required")
-    @Size(max = 100, message = "SKU must not exceed 100 characters")
     private String sku;
-
     private Long categoryId;
-
-    @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
-
-    @DecimalMin(value = "0.0", message = "Sale price must be greater than or equal to 0")
     private BigDecimal salePrice;
-
-    @Min(value = 0, message = "Stock quantity must be greater than or equal to 0")
     private Integer stockQuantity = 0;
-
-    @Size(max = 500, message = "Image URL must not exceed 500 characters")
     private String imageUrl;
-
-    private Product.ProductStatus status = Product.ProductStatus.ACTIVE;
-
+    private Product.ProductStatus status;
     private Boolean isFeatured = false;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public BigDecimal getSalePrice() {
+        return salePrice;
+    }
+
+    public void setSalePrice(BigDecimal salePrice) {
+        this.salePrice = salePrice;
+    }
+
+    public Integer getStockQuantity() {
+        return stockQuantity;
+    }
+
+    public void setStockQuantity(Integer stockQuantity) {
+        this.stockQuantity = stockQuantity;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Product.ProductStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(Product.ProductStatus status) {
+        this.status = status;
+    }
+
+    public Boolean getIsFeatured() {
+        return isFeatured;
+    }
+
+    public void setIsFeatured(Boolean isFeatured) {
+        this.isFeatured = isFeatured;
+    }
 }

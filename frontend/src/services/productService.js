@@ -2,8 +2,9 @@ import api from './api'
 
 export const productService = {
     // Get all products with pagination and filters
-    getProducts(params = {}) {
-        return api.get('/products', { params })
+    // Get all products (no pagination)
+    getProducts() {
+        return api.get('/products/all')
     },
 
     // Get product by ID

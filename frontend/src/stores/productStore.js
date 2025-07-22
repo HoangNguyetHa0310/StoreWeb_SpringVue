@@ -14,7 +14,7 @@ export const useProductStore = defineStore('product', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await getProducts();
+        const response = await productService.getProducts();
         this.products = response.data;
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to fetch products.';

@@ -18,7 +18,12 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const response = await apiLogin(credentials);
-        this.user = response.data.user;
+        // Backend trả về: { token, email, firstName, lastName }
+        this.user = {
+          email: response.data.email,
+          firstName: response.data.firstName,
+          lastName: response.data.lastName
+        };
         this.token = response.data.token;
         localStorage.setItem('user', JSON.stringify(this.user));
         localStorage.setItem('token', this.token);

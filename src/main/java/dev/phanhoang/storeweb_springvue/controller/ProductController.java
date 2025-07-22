@@ -6,6 +6,7 @@ import dev.phanhoang.storeweb_springvue.entity.Product;
 import dev.phanhoang.storeweb_springvue.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,8 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
-    private final ProductService productService;
+    @Autowired
+    private ProductService productService;
 
     // Get all products with pagination and filters
     @GetMapping
@@ -92,6 +94,12 @@ public class ProductController {
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<ProductResponseDto>> getProductsByCategory(@PathVariable Long categoryId) {
         List<ProductResponseDto> products = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(products);
+    }
+    // Get all products (no pagination)
+    @GetMapping("/all")
+    public ResponseEntity<List<ProductResponseDto>> getAllProductsNoPaging() {
+        List<ProductResponseDto> products = productService.getAllProductsNoPaging();
         return ResponseEntity.ok(products);
     }
 }
