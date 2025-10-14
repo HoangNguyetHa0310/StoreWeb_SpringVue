@@ -52,6 +52,7 @@ public class Product {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ProductStatus status = ProductStatus.ACTIVE;
 
     private Boolean isFeatured = false;
@@ -70,7 +71,11 @@ public class Product {
         updatedAt = LocalDateTime.now();
     }
 
-    public enum ProductStatus { ACTIVE, INACTIVE }
+    public enum ProductStatus {
+        ACTIVE,
+        INACTIVE,
+        DELETED
+    }
 
     // Getter & Setter
     public Long getId() { return id; }

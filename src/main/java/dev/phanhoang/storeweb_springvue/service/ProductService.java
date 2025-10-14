@@ -26,6 +26,15 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
+    // Get all products (no pagination)
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     // Get all products with pagination and filters
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getAllProducts(String name, Long categoryId,
@@ -136,13 +145,15 @@ public class ProductService {
         dto.setUpdatedAt(product.getUpdatedAt());
 
         if (product.getCategory() != null) {
-            CategoryResponseDto categoryDto = new CategoryResponseDto();
-            categoryDto.setId(product.getCategory().getId());
-            categoryDto.setName(product.getCategory().getName());
-            categoryDto.setSlug(product.getCategory().getSlug());
-            categoryDto.setDescription(product.getCategory().getDescription());
-            categoryDto.setIsActive(product.getCategory().getIsActive());
-            categoryDto.setCreatedAt(product.getCategory().getCreatedAt());
+            Category category = product.getCategory();
+            CategoryResponseDto categoryDto = new CategoryResponseDto(
+                category.getId(),
+                category.getName(),
+                category.getSlug(),
+                category.getDescription(),
+                category.getIsActive(),
+                category.getCreatedAt()
+            );
             dto.setCategory(categoryDto);
         }
 

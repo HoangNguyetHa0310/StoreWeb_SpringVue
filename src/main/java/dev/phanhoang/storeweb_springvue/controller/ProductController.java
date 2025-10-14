@@ -26,9 +26,16 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    // Get all products (no pagination)
+    @GetMapping("/all")
+    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
+        List<ProductResponseDto> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
+    }
+
     // Get all products with pagination and filters
     @GetMapping
-    public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
+    public ResponseEntity<Page<ProductResponseDto>> getProductsWithPagination(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
