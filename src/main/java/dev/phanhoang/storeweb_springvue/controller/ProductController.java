@@ -103,10 +103,5 @@ public class ProductController {
         List<ProductResponseDto> products = productService.getProductsByCategory(categoryId);
         return ResponseEntity.ok(products);
     }
-    // Get all products (no pagination)
-    @GetMapping("/all")
-    public ResponseEntity<List<ProductResponseDto>> getAllProductsNoPaging() {
-        List<ProductResponseDto> products = productService.getAllProductsNoPaging();
-        return ResponseEntity.ok(products);
-    }
+    // NOTE: only one /all mapping is allowed. getAllProducts() above serves this route.
 }

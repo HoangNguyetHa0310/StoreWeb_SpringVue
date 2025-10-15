@@ -1,38 +1,56 @@
-# Build stage for Spring Boot
-FROM maven:3.8.5-openjdk-17 AS backend-build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
+###
+# Multi-stage Dockerfile (frontend + backend -> single runnable image)
+# - Stage 1: build frontend (Vite)
+# - Stage 2: build backend (Maven) and copy frontend dist into resources/static
+# - Stage 3: minimal runtime image (OpenJDK JRE)
+###
 
-# Build stage for Vue.js
-FROM node:18 AS frontend-build
-WORKDIR /app/frontend
+#### Stage 1: Frontend build (Vite)
+FROM node:18-alpine AS frontend-build
+WORKDIR /home/app/frontend
+
+# Copy package manifests first to leverage Docker cache for dependencies
 COPY frontend/package*.json ./
-RUN npm install
+# Use npm ci if lockfile later added; fallback to npm install
+RUN npm ci --silent || npm install --silent
+
+# Copy source and build
 COPY frontend/ .
-# Install required dependencies
-RUN npm install --save-dev @babel/core @babel/eslint-parser @babel/preset-env \
-    @vue/cli-plugin-babel @vue/cli-plugin-eslint @vue/cli-service \
-    @vue/compiler-sfc vue-template-compiler
-# Create a temporary .eslintrc.js
-RUN echo "module.exports = { root: true, env: { node: true }, extends: ['plugin:vue/vue3-essential'], parserOptions: { parser: '@babel/eslint-parser' }, rules: { 'vue/multi-word-component-names': 'off' } }" > .eslintrc.js
-# Create a temporary babel.config.js
-RUN echo "module.exports = { presets: ['@vue/cli-plugin-babel/preset'] }" > babel.config.js
-# Build the application
-ENV NODE_ENV=production
-RUN npm run build
+# Build: prefer `build:vite` then `build` (package.json defines both)
+RUN if npm run | grep -q "build:vite"; then npm run build:vite; else npm run build; fi
 
-# Final stage
-FROM openjdk:17-jdk-slim
+
+#### Stage 2: Backend build (Maven) - produce fat jar
+FROM maven:3.8.5-openjdk-17 AS backend-build
+WORKDIR /home/app
+
+# Copy pom first and pre-download dependencies (cacheable layer)
+COPY pom.xml ./
+RUN mvn -B dependency:go-offline
+
+# Copy application source
+COPY src ./src
+
+# Copy frontend build output into Spring Boot static resources so it will be served
+# If frontend produced `dist` directory, copy it into src/main/resources/static
+COPY --from=frontend-build /home/app/frontend/dist ./src/main/resources/static
+
+# Build the application (skip tests to speed up image build; remove -DskipTests in CI if you want tests)
+RUN mvn -B clean package -DskipTests
+
+
+#### Stage 3: Runtime image
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-# Copy backend jar
-COPY --from=backend-build /app/target/*.jar app.jar
-# Copy frontend dist
-COPY --from=frontend-build /app/frontend/dist /app/static
 
-# Environment variables
-ENV SPRING_PROFILES_ACTIVE=prod
+# Copy the packaged jar from builder stage. The wildcard handles versioned jar names.
+COPY --from=backend-build /home/app/target/*.jar ./app.jar
+
+# Defaults suitable for local development. Can be overridden with `docker run -e ...`.
+ENV SPRING_PROFILES_ACTIVE=local
+ENV SERVER_PORT=8080
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]
