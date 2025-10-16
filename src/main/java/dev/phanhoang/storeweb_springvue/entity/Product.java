@@ -51,9 +51,9 @@ public class Product {
     @Size(max = 500)
     private String imageUrl;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ProductStatus status = ProductStatus.ACTIVE;
+    @Convert(converter = ProductStatusConverter.class)
+    private ProductStatus status = ProductStatus.active;
 
     private Boolean isFeatured = false;
 
@@ -72,9 +72,19 @@ public class Product {
     }
 
     public enum ProductStatus {
-        ACTIVE,
+        active,
         INACTIVE,
-        DELETED
+        DELETED;
+
+        // Case-insensitive factory for JSON deserialization or manual parsing
+        @com.fasterxml.jackson.annotation.JsonCreator
+        public static ProductStatus fromString(String value) {
+            if (value == null) return null;
+            for (ProductStatus s : ProductStatus.values()) {
+                if (s.name().equalsIgnoreCase(value.trim())) return s;
+            }
+            throw new IllegalArgumentException("Unknown ProductStatus: " + value);
+        }
     }
 
     // Getter & Setter

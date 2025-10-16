@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { getProducts, getProductById } from '@/services/apiService';
 import { productService } from '@/services/productService';
 
 export const useProductStore = defineStore('product', {
@@ -28,7 +27,7 @@ export const useProductStore = defineStore('product', {
       this.product = null;
       this.error = null;
       try {
-        const response = await getProductById(id);
+        const response = await productService.getProduct(id);
         this.product = response.data;
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to fetch product.';

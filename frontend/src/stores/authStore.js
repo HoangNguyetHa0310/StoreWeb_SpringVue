@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { login as apiLogin, register as apiRegister } from '@/services/apiService';
+import { authService } from '@/services/authService';
 import router from '@/router';
 
 export const useAuthStore = defineStore('auth', {
@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await apiLogin(credentials);
+        const response = await authService.login(credentials);
         // Backend trả về: { token, email, firstName, lastName }
         this.user = {
           email: response.data.email,

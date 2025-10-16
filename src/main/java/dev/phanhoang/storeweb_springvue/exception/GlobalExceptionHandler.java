@@ -1,9 +1,4 @@
 package dev.phanhoang.storeweb_springvue.exception;
-
-import dev.phanhoang.storeweb_springvue.exception.DuplicateResourceException;
-import dev.phanhoang.storeweb_springvue.exception.ErrorResponse;
-import dev.phanhoang.storeweb_springvue.exception.ResourceNotFoundException;
-import dev.phanhoang.storeweb_springvue.exception.ValidationErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

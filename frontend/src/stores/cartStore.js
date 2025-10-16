@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { getCart, addToCart, updateCartItem, removeFromCart } from '@/services/apiService';
+import { cartService } from '@/services/cartService';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -17,8 +17,8 @@ export const useCartStore = defineStore('cart', {
       this.loading = true;
       this.error = null;
       try {
-        const response = await getCart(userId);
-        this.items = response.data.items; // Giả định API trả về { items: [...] }
+        const response = await cartService.getCart(userId);
+        this.items = response.data.items; // expecting API returns { items: [...] }
       } catch (err) {
         this.error = 'Failed to fetch cart.';
         console.error(err);
