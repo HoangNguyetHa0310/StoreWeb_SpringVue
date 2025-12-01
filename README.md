@@ -107,6 +107,36 @@ git push -u origin master
 - Tạo CI/CD pipeline (GitHub Actions) để build & push docker images
 
 Nếu bạn cần tôi thêm hướng dẫn hoặc implement bất kỳ tính năng nào (ví dụ: form tạo sản phẩm, thêm xác thực, test), chỉ cần nói nhé!
+
+---
+
+## Branching (Quy ước branch)
+- Mặc định branch chính của repo hiện là `master`.
+- Để bảo đảm branch mới luôn được tạo từ `master`, luôn thực hiện trước khi tạo branch mới:
+```bash
+git checkout master
+git pull origin master
+git checkout -b feature/ten_tinh_nang
+```
+- Bạn có thể cấu hình Branch Protection trong GitHub để buộc review, CI, và chặn xóa branch `master` từ giao diện Settings → Branches.
+
+## Xóa branch `main` trên remote (nếu bạn muốn)
+1. Trước khi xóa `main`, bạn cần chắc chắn đã đổi branch mặc định (Default branch) trên GitHub sang `master`:
+	- Vào repo trên GitHub → Settings → Branches → Default branch → chuyển sang `master`.
+	- Hoặc sử dụng GitHub CLI (nếu cài) và đã login:
+```bash
+gh repo edit HoangNguyetHa0310/StoreWeb_SpringVue --default-branch master
+```
+2. Sau khi thay default branch, xóa `main` trên remote:
+```bash
+git push origin --delete main
+```
+3. Xóa branch `main` local (nếu tồn tại):
+```bash
+git branch -D main
+```
+
+> Lưu ý: Nếu `main` vẫn là default branch trên GitHub, server sẽ chặn thao tác xóa. Hãy đổi default branch trước khi xóa hoặc xóa thông qua giao diện quản lý repo (Settings).
 ---
 
 _Các phần hướng dẫn ngắn (tiếng Anh) đã được gộp phía trên. Vui lòng tham khảo các phần ‘Cách chạy nhanh bằng Docker’ và ‘Phát triển cục bộ’ ở phần tiếng Việt để chạy dự án._
