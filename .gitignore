@@ -1,0 +1,35 @@
+# Java / Maven
+/target/
+**/target/
+**/*.class
+*.log
+*.tmp
+
+# IntelliJ
+*.iml
+.idea/
+
+# Node
+/frontend/node_modules/
+/frontend/dist/
+
+# NPM lockfile if you use yarn
+package-lock.json
+
+# OS files
+.DS_Store
+
+# Docker
+**/docker-compose.override.yml
+**/docker-compose.*.yml
+
+# Misc
+env.properties
+.env
+
+# logs
+logs/
+*.log
+
+# IDE config
+.vscode/
