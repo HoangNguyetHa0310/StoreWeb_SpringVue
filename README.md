@@ -11,7 +11,7 @@ Bản README này hướng dẫn bạn cách khởi chạy project **StoreWeb** 
 
 ## Yêu cầu
 - Docker & Docker Compose
-- Java 17 và Maven (nếu bạn muốn chạy backend local)
+- Java 22 và Maven (nếu bạn muốn chạy backend local)
 - Node.js (nếu bạn muốn chạy frontend local)
 
 ---
@@ -46,7 +46,7 @@ docker compose down
 ```bash
 cd backend
 ```
-2. Chạy bằng maven:
+2. Chạy bằng maven (Java 22):
 ```bash
 mvn -U spring-boot:run
 ```
@@ -56,6 +56,8 @@ mvn -B -DskipTests package
 java -jar target/backend-0.0.1-SNAPSHOT.jar
 ```
 3. Mặc định backend dùng port 8080 và kết nối MySQL theo biến môi trường DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD.
+
+Lưu ý: backend bây giờ yêu cầu Java 22 (JDK 22). Nếu bạn chạy cục bộ, hãy cài Java 22 hoặc dùng SDKMAN/jenv để chuyển.
 
 ### Frontend (Vite + Vue)
 1. Đi vào folder frontend:
@@ -98,55 +100,3 @@ git push -u origin master
 ## Cách sửa lỗi thông dụng
 - Lỗi port conflict: đổi mapping port trong `docker-compose.yml` hoặc tắt dịch vụ chiếm port đó.
 - Lỗi DB kết nối: kiểm tra username/password và DB_NAME.
-
----
-
-## Nâng cao (tùy chọn)
-- Thêm authentication: Spring Security + JWT
-- Thêm validation & DTOs cho backend
-- Tạo CI/CD pipeline (GitHub Actions) để build & push docker images
-
-Nếu bạn cần tôi thêm hướng dẫn hoặc implement bất kỳ tính năng nào (ví dụ: form tạo sản phẩm, thêm xác thực, test), chỉ cần nói nhé!
-
----
-
-## Branching (Quy ước branch)
-- Mặc định branch chính của repo hiện là `master`.
-- Để bảo đảm branch mới luôn được tạo từ `master`, luôn thực hiện trước khi tạo branch mới:
-```bash
-git checkout master
-git pull origin master
-git checkout -b feature/ten_tinh_nang
-```
-- Bạn có thể cấu hình Branch Protection trong GitHub để buộc review, CI, và chặn xóa branch `master` từ giao diện Settings → Branches.
-
-## Xóa branch `main` trên remote (nếu bạn muốn)
-1. Trước khi xóa `main`, bạn cần chắc chắn đã đổi branch mặc định (Default branch) trên GitHub sang `master`:
-	- Vào repo trên GitHub → Settings → Branches → Default branch → chuyển sang `master`.
-	- Hoặc sử dụng GitHub CLI (nếu cài) và đã login:
-```bash
-gh repo edit HoangNguyetHa0310/StoreWeb_SpringVue --default-branch master
-```
-2. Sau khi thay default branch, xóa `main` trên remote:
-```bash
-git push origin --delete main
-```
-3. Xóa branch `main` local (nếu tồn tại):
-```bash
-git branch -D main
-```
-
-> Lưu ý: Nếu `main` vẫn là default branch trên GitHub, server sẽ chặn thao tác xóa. Hãy đổi default branch trước khi xóa hoặc xóa thông qua giao diện quản lý repo (Settings).
----
-
-_Các phần hướng dẫn ngắn (tiếng Anh) đã được gộp phía trên. Vui lòng tham khảo các phần ‘Cách chạy nhanh bằng Docker’ và ‘Phát triển cục bộ’ ở phần tiếng Việt để chạy dự án._
-
----
-
-## Files added by the starter
-
-- `backend`: Spring Boot REST API with `Product` entity and `ProductController`
-- `frontend`: Vue 3 app with a `ProductList` component and API service
-- `docker-compose.yml`: Configured services for MySQL, backend, and frontend
-
-If you need help customizing the app (adding authentication, more models, or CI/CD) — tell me what you want next.
