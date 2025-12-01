@@ -87,9 +87,9 @@ echo "# StoreWeb_SpringVue" >> README.md
 git init
 git add README.md
 git commit -m "first commit"
-git branch -M main
+git branch -M master
 git remote add origin https://github.com/HoangNguyetHa0310/StoreWeb_SpringVue.git
-git push -u origin main
+git push -u origin master
 ```
 > Lưu ý: Lệnh `git push` có thể yêu cầu xác thực. Bạn có thể cấu hình SSH key hoặc GitHub token trong Git config.
 
@@ -109,48 +109,7 @@ git push -u origin main
 Nếu bạn cần tôi thêm hướng dẫn hoặc implement bất kỳ tính năng nào (ví dụ: form tạo sản phẩm, thêm xác thực, test), chỉ cần nói nhé!
 ---
 
-## Quickstart (Docker)
-
-1. Make sure Docker and Docker Compose are installed and running.
-2. From project root run:
-
-```bash
-docker compose up --build
-```
-
-This will start:
-- MySQL on port 3306
-- Spring Boot backend on port 8080
-- The Vue frontend on port 80
-
-Open http://localhost to access the frontend.
-
-## Backend local development (without Docker)
-
-1. Navigate to the `backend` folder and run with maven:
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-You can run MySQL locally and point the `application.properties` env vars accordingly.
-
-## Frontend local development (without Docker)
-
-1. Navigate to the `frontend` folder and run:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Note: The frontend expects the backend API at `/api` relative path. To run both frontend and backend locally during development:
-- Start backend (maven) on port 8080
-- Start frontend with `npm run dev` — Vite is configured to proxy `/api` to `http://localhost:8080`.
-
-If you run the backend in a different host/port, update `vite.config.js` or set environment variables accordingly.
+_Các phần hướng dẫn ngắn (tiếng Anh) đã được gộp phía trên. Vui lòng tham khảo các phần ‘Cách chạy nhanh bằng Docker’ và ‘Phát triển cục bộ’ ở phần tiếng Việt để chạy dự án._
 
 ---
 
